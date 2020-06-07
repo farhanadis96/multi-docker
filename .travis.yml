@@ -1,0 +1,22 @@
+sudo: required
+services:
+    -   docker
+
+before_install:
+    -   docker build -t farhanadis/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    -   docker run farhanadis/react-test npm test -- --coverage
+
+after_success:
+    -   docker build -t farhanadis/multi-client ./client
+    -   docker build -t farhanadis/multi-nginx ./nginx
+    -   docker build -t farhanadis/multi-server ./server
+    -   docker build -t farhanadis/multi-worker ./worker
+
+    -   echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+    -   docker push farhanadis/multi-client
+    -   docker push farhanadis/multi-nginx
+    -   docker push farhanadis/multi-server
+    -   docker push farhanadis/multi-worker
